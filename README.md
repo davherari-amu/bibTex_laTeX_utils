@@ -20,3 +20,11 @@ Necessary python libraries:
 sys
 getopt
 pybtex
+
+## doi2bib.py
+Code from: https://scipython.com/blog/doi-to-bibtex/
+This function takes as input a doi and returns a bibtex.
+
+Necessary python libraries:
+sys
+urllib
