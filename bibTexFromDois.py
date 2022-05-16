@@ -70,6 +70,8 @@ with open(outFile, 'w') as File:
                     for line in bibLines:
                         bibtex += line + '\n'
                     break
+        # Correction of ampersand symbols
+        bibtex = bibtex.replace(r'{\&}amp$\mathsemicolon$', '&')
         File.write(bibtex)
         File.write('\n')
 # }}}
