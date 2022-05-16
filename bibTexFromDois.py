@@ -8,7 +8,7 @@ from string import ascii_lowercase
 
 # Input and output files {{{
 try:
-    opts, args = getopt.getopt(sys.argv[1:], 'i:o:l:')
+    opts, args = getopt.getopt(sys.argv[1:], 'i:o:l:d')
     if len(args)>0:
         raise getopt.GetoptError('Too many arguments!')
 except getopt.GetoptError:
@@ -16,8 +16,10 @@ except getopt.GetoptError:
     print('To indicate the input file name: -i "fileName.txt"')
     print('To indicate the output file name: -o "fileName.bib" (optional)')
     print('To indicate the length of the author last-name letters: -l length (optional)')
+    print('To indicate adding doi as note: -d (optional)')
     raise
 # Initialisation
+doiNote = False
 inFile  = None
 outFile = None
 lenAutName = 3
@@ -29,6 +31,8 @@ for opt, arg in opts:
         outFile = arg
     if opt in ['-l']:
         lenAutName = eval(arg)
+    if opt in ['-d']:
+        doiNote = True
 if inFile == None:
     raise("Wrong call! The input file is not present. Use -i 'fileName.json'")
 if not inFile[-4:] == '.txt':
@@ -71,5 +75,5 @@ with open(outFile, 'w') as File:
 # }}}
 
 # Get unified bibTex {{{
-Uni_Doi_and_name(outFile, outFile, lenAutName)
+Uni_Doi_and_name(outFile, outFile, lenAutName, doiNote = doiNote)
 # }}}

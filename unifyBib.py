@@ -64,9 +64,10 @@ def UnifiedEntryName(bibData, maxNumAutLets = 3):
 # }}}
 
 # Uni_Doi_and_name
-def Uni_Doi_and_name(inFile, outFile, lenAutName = 3):
+def Uni_Doi_and_name(inFile, outFile, lenAutName = 3, doiNote = True):
     bib = parse_file(inFile)
-    bib = AddDoiAsNote(bib)
+    if doiNote:
+        bib = AddDoiAsNote(bib)
     bib = UnifiedEntryName(bib, maxNumAutLets = lenAutName)
     with open(outFile, 'w') as File:
         File.write(bib.to_string("bibtex"))
