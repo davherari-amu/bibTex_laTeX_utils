@@ -3,6 +3,7 @@ import sys
 import getopt
 from doi2bib import doi2bib
 from unifyBib import Uni_Doi_and_name
+from string import ascii_lowercase
 # }}}
 
 # Input and output files {{{
@@ -45,9 +46,26 @@ websites (DOIs)"""
 with open(inFile, 'r') as File:
     dois = File.readlines()
 # Write initial bibTex
+entries = []
 with open(outFile, 'w') as File:
     for doi in dois:
         bibtex = doi2bib(doi[:-1])
+        bibLines = bibtex.splitlines(0)
+        entryName = bibLines[0]
+        str0 = entryName.find('{') + 1
+        str1 = entryName.find(',')
+        entryName = entryName[str0 : str1]
+        if not entryName in entries:
+            entries.append(entryName)
+        else:
+            for letter in ascii_lowercase:
+                if not entryName + letter in entries:
+                    entries.append(entryName + letter)
+                    bibLines[0] = bibLines[0][:str0] + entryName + letter
+                    bibtex = ''
+                    for line in bibLines:
+                        bibtex += line + '\n'
+                    break
         File.write(bibtex)
         File.write('\n')
 # }}}
