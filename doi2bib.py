@@ -5,6 +5,8 @@ https://scipython.com/blog/doi-to-bibtex/
 import sys
 import urllib.request
 from urllib.error import HTTPError
+import bibtexparser
+from pdb import set_trace
 # }}}
 
 # Parameters {{{
@@ -25,6 +27,8 @@ def doi2bib(doi):
         else:
             print('Service unavailable.')
         sys.exit(1)
+    # Write in lines
+    bibtex = bibtexparser.write_string(bibtexparser.parse_string(bibtex))
     return bibtex
 # }}}
 

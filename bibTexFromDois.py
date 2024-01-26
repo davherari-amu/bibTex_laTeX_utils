@@ -69,7 +69,7 @@ with open(outFile, 'w') as File:
             for letter in ascii_lowercase:
                 if not entryName + letter in entries:
                     entries.append(entryName + letter)
-                    bibLines[0] = bibLines[0][:str0] + entryName + letter
+                    bibLines[0] = bibLines[0][:str0] + entryName + letter + ','
                     bibtex = ''
                     for line in bibLines:
                         bibtex += line + '\n'
