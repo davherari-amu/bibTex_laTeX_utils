@@ -4,6 +4,9 @@ import getopt
 from pybtex.database import parse_file
 from pybtex.database import BibliographyData as bbd
 from pybtex.database import Entry
+from unidecode import unidecode
+from pdb import set_trace
+from string import ascii_lowercase
 # }}}
 
 # Functions {{{
@@ -22,10 +25,63 @@ def AddDoiAsNote(bibData, message = 'DOI:'):
     return bib
 # }}}
 
+# Replace special characters of all initial letters in the name {{{
+def ReplaceInitialSpecialCharaters(bibData):
+    # Loop over bib entries
+    for key in bibData.entries:
+        # Loop over article authors
+        authors = bibData.entries[key].persons["author"]
+        for author in authors:
+            # Loop over author first names
+            first_names = author.first_names
+            for k1 in range(len(first_names)):
+                name = first_names[k1]
+                author.first_names[k1] = unidecode(name[0]) + name[1:].lower()
+            # Loop over author last names
+            last_names = author.last_names
+            for k1 in range(len(last_names)):
+                name = last_names[k1]
+                author.last_names[k1] = unidecode(name[0]) + name[1:].lower()
+    return bibData
+# }}}
+
+# Get unified entry name {{{
+def GetUnifiedEntryName(entry, entryNames, maxNumAutLets = 3):
+    # Set default entry name {{{
+    # First author last name
+    name = entry.persons["author"][0].last_names[0]
+    # Year
+    try:
+        year = entry.fields["year"]
+    except KeyError:
+        year = entry.fields["EarlyAccessDate"]
+        year = year.split()[1]
+    except:
+        raise
+    # Make name, for example abc12 when maxNumAutLets = 3
+    lenName = min(len(name), maxNumAutLets)
+    newEntry = name[:lenName].lower() + year[2:]
+    newEntry = unidecode(newEntry)
+    # }}}
+    # If the default entry name has already been used try to change it
+    # adding an extra letter, as in abc12a
+    if newEntry in entryNames:
+        fail = True
+        for letter in ascii_lowercase:
+            if not newEntry + letter in entryNames:
+                newEntry += letter
+                fail = False
+                break
+        if fail:
+            message = "Error: too many entries have the same name and year."
+            raise ValueError(message)
+    # If the default entry has not been used yet
+    return newEntry
+# }}}
+
 # Set unified entry name {{{
 def UnifiedEntryName(bibData, maxNumAutLets = 3):
     # Get keys and names {{{
-    from string import ascii_lowercase
     keys = {}
     for key in bibData.entries:
         name = bibData.entries[key].persons["author"][0].last_names[0]
@@ -38,6 +94,7 @@ def UnifiedEntryName(bibData, maxNumAutLets = 3):
             raise
         lenName = min(len(name), maxNumAutLets)
         newKey = name[:lenName].lower() + year[2:]
+        newKey = unidecode(newKey)
         if not newKey in keys:
             keys[newKey] = key
         else:
@@ -58,7 +115,7 @@ def UnifiedEntryName(bibData, maxNumAutLets = 3):
         fields  = bibData.entries[oldKey].fields
         persons = bibData.entries[oldKey].persons
         entry = Entry(type_, fields, persons)
-        newBib.entries[newKey] = entry
+        newBib.entries[unidecode(newKey)] = entry
     # }}}
     return newBib
 # }}}
@@ -68,6 +125,7 @@ def Uni_Doi_and_name(inFile, outFile, lenAutName = 3, doiNote = True):
     bib = parse_file(inFile)
     if doiNote:
         bib = AddDoiAsNote(bib)
+    bib = ReplaceInitialSpecialCharaters(bib)
     bib = UnifiedEntryName(bib, maxNumAutLets = lenAutName)
     with open(outFile, 'w') as File:
         File.write(bib.to_string("bibtex"))
